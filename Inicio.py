@@ -9,27 +9,27 @@ st.title("Demo de TF-IDF con Preguntas y Respuestas")
 
 st.write("""
 Cada línea se trata como un **documento** (puede ser una frase, un párrafo o un texto más largo).  
-⚠️ Los documentos y las preguntas deben estar en **inglés**, ya que el análisis está configurado para ese idioma.  
+⚠️ Los documentos y las preguntas deben estar en **español**.  
 
-La aplicación aplica normalización y *stemming* para que palabras como *playing* y *play* se consideren equivalentes.
+La aplicación aplica normalización y *stemming* para que palabras como *jugando* y *jugar* se consideren equivalentes.
 """)
 
-# Ejemplo inicial en inglés
+# Ejemplo inicial en español
 text_input = st.text_area(
-    "Escribe tus documentos (uno por línea, en inglés):",
-    "I have a happy and flirtatious cat.\nI'll have lunch with my mom tomorrow..\nI'm very sleepy."
+    "Escribe tus documentos (uno por línea, en español):",
+    "Tengo un gato feliz y coqueto.\nMañana almorzaré con mi mamá.\nTengo mucho sueño."
 )
 
-question = st.text_input("Escribe una pregunta (en inglés):", "Who's having lunch?")
+question = st.text_input("Escribe una pregunta (en español):", "¿Quién va a almorzar?")
 
-# Inicializar stemmer para inglés
-stemmer = SnowballStemmer("english")
+# Inicializar stemmer para español
+stemmer = SnowballStemmer("spanish")
 
 def tokenize_and_stem(text: str):
     # Pasar a minúsculas
     text = text.lower()
-    # Eliminar caracteres no alfabéticos
-    text = re.sub(r'[^a-z\s]', ' ', text)
+    # Eliminar caracteres no alfabéticos (permitiendo acentos y ñ)
+    text = re.sub(r'[^a-záéíóúñü\s]', ' ', text)
     # Tokenizar (palabras con longitud > 1)
     tokens = [t for t in text.split() if len(t) > 1]
     # Aplicar stemming
@@ -44,7 +44,7 @@ if st.button("Calcular TF-IDF y buscar respuesta"):
         # Vectorizador con stemming
         vectorizer = TfidfVectorizer(
             tokenizer=tokenize_and_stem,
-            stop_words="english",
+            stop_words="spanish",
             token_pattern=None
         )
 
@@ -83,6 +83,7 @@ if st.button("Calcular TF-IDF y buscar respuesta"):
             "Texto": documents,
             "Similitud": similarities
         })
+
         st.write("### Puntajes de similitud (ordenados)")
         st.dataframe(sim_df.sort_values("Similitud", ascending=False))
 
@@ -90,8 +91,5 @@ if st.button("Calcular TF-IDF y buscar respuesta"):
         vocab = vectorizer.get_feature_names_out()
         q_stems = tokenize_and_stem(question)
         matched = [s for s in q_stems if s in vocab and df_tfidf.iloc[best_idx].get(s, 0) > 0]
+
         st.write("### Stems de la pregunta presentes en el documento elegido:", matched)
-
-
-
-
